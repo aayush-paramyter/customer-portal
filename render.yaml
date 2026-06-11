@@ -1,36 +1,28 @@
-# Customer Portal — deploy as a separate Render Blueprint (API + customer frontend).
+# Customer Portal on Render — single combined web service (nginx + API).
 # DNS: wildcard CNAME *.portals.hyegro.com → customer-portal-frontend.onrender.com
-#      (plus Render _acme-challenge / _cf-custom-hostname records per Render docs)
+# Custom domains: add in Render on customer-portal-frontend (CRM can register via Render API).
 
 services:
   - type: web
-    name: customer-portal-api
+    name: customer-portal-frontend
     runtime: docker
     rootDir: CustomerPortal
-    dockerfilePath: Dockerfile
+    dockerfilePath: Dockerfile.render
     plan: starter
+    healthCheckPath: /health
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
-      - key: PORTAL_CORS_ORIGINS
-        sync: false
       - key: DB
         sync: false
       - key: PORTAL_JWT_SECRET_KEY
         sync: false
-    autoDeploy: true
-
-  - type: web
-    name: customer-portal-frontend
-    runtime: docker
-    rootDir: CustomerPortal/frontend
-    dockerfilePath: Dockerfile
-    plan: starter
-    envVars:
-      # Build-time: set VITE_PORTAL_API_BASE in Render dashboard to https://<customer-portal-api-host>
-      # Runtime same-origin proxy (optional): PORTAL_API_UPSTREAM=<api-host>:8011
-      - key: VITE_PORTAL_API_BASE
+      - key: PORTAL_CORS_ORIGINS
         sync: false
-      - key: PORTAL_API_UPSTREAM
+      - key: MAILTRAP_API_TOKEN
+        sync: false
+      - key: EMAIL_SENDER_ADDRESS
+        sync: false
+      - key: EMAIL_SENDER_NAME
         sync: false
     autoDeploy: true

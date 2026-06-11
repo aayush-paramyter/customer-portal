@@ -37,6 +37,11 @@ export async function bootstrapPortalHost() {
       signal: controller.signal,
     })
     if (!res.ok) {
+      if (res.status === 502 || res.status === 503) {
+        throw new Error(
+          'Customer portal API is unreachable. Redeploy customer-portal-frontend with the combined image (Dockerfile.render) and set DB to the production database.',
+        )
+      }
       const payload = await res.json().catch(() => ({}))
       throw new Error(payload.detail || 'This portal URL is not configured')
     }
