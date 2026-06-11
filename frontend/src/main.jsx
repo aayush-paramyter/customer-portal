@@ -4,14 +4,19 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { bootstrapPortalHost } from './api/portalHost'
+import { PortalBrandingProvider } from './context/PortalBrandingContext'
 
 function BootstrapApp() {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState('')
+  const [portalContext, setPortalContext] = useState(null)
 
   useEffect(() => {
     bootstrapPortalHost()
-      .then(() => setReady(true))
+      .then((ctx) => {
+        setPortalContext(ctx)
+        setReady(true)
+      })
       .catch((err) => setError(err.message || 'Failed to load portal'))
   }, [])
 
@@ -37,7 +42,11 @@ function BootstrapApp() {
     )
   }
 
-  return <App />
+  return (
+    <PortalBrandingProvider branding={portalContext?.custom_branding} hostname={portalContext?.hostname}>
+      <App />
+    </PortalBrandingProvider>
+  )
 }
 
 createRoot(document.getElementById('root')).render(

@@ -1,46 +1,64 @@
+import { applyBrandingToDocument, normalizeBranding, storeBranding } from './portalBranding'
+
 const API_BASE = import.meta.env.VITE_PORTAL_API_BASE ?? ''
 
-export function isLocalDevHost() {
-  const host = window.location.hostname
-  return host === 'localhost' || host === '127.0.0.1'
+const BOOTSTRAP_TIMEOUT_MS = 15000
+
+export function getPortalHostname() {
+  return window.location.hostname
+}
+
+export function portalHostHeaders(extra = {}) {
+  const host = getPortalHostname()
+  const headers = { 'X-Portal-Origin': window.location.origin, ...extra }
+  if (host) headers['X-Portal-Host'] = host
+  return headers
 }
 
 export function getApiBase() {
-  if (API_BASE) return API_BASE
-  return isLocalDevHost() ? 'http://localhost:8011' : ''
+  if (API_BASE) return API_BASE.replace(/\/$/, '')
+  return ''
 }
 
-export function applyBranding(branding) {
-  if (!branding || typeof branding !== 'object') return
-  const root = document.documentElement
-  if (branding.primaryColor) {
-    root.style.setProperty('--color-primary', branding.primaryColor)
-  }
-  if (branding.logoUrl) {
-    root.dataset.portalLogoUrl = branding.logoUrl
-  }
+export function applyBranding(branding, hostname = window.location.hostname) {
+  const normalized = normalizeBranding(branding, hostname)
+  storeBranding(normalized)
+  applyBrandingToDocument(normalized)
+  return normalized
 }
 
 export async function bootstrapPortalHost() {
-  if (isLocalDevHost()) {
-    const schema = localStorage.getItem('tenantSchema') || 'tenant_demo'
-    localStorage.setItem('tenantSchema', schema)
-    return {
-      tenant_schema: schema,
-      tenant_resolved_from_host: false,
-      auth_method: 'both',
-    }
-  }
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), BOOTSTRAP_TIMEOUT_MS)
 
-  const res = await fetch(`${getApiBase()}/api/portal/public/host-context`)
-  if (!res.ok) {
-    const payload = await res.json().catch(() => ({}))
-    throw new Error(payload.detail || 'This portal URL is not configured')
+  try {
+    const res = await fetch(`${getApiBase()}/api/portal/public/host-context`, {
+      headers: portalHostHeaders(),
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}))
+      throw new Error(payload.detail || 'This portal URL is not configured')
+    }
+    const ctx = await res.json()
+    if (ctx.tenant_schema) {
+      localStorage.setItem('tenantSchema', ctx.tenant_schema)
+    }
+    ctx.custom_branding = applyBranding(ctx.custom_branding, getPortalHostname())
+    return ctx
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(
+        'Could not reach the customer portal API. Make sure the portal API is running on port 8011, then refresh this page.',
+      )
+    }
+    if (err instanceof TypeError) {
+      throw new Error(
+        'Could not connect to the customer portal API. Start it with: uvicorn app.main:app --reload --port 8011',
+      )
+    }
+    throw err
+  } finally {
+    clearTimeout(timeoutId)
   }
-  const ctx = await res.json()
-  if (ctx.tenant_schema) {
-    localStorage.setItem('tenantSchema', ctx.tenant_schema)
-  }
-  applyBranding(ctx.custom_branding)
-  return ctx
 }

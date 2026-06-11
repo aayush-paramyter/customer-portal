@@ -1,9 +1,11 @@
 import { useParams, Link } from 'react-router-dom'
 import PortalLayout from '../components/PortalLayout'
+import { usePortalBranding } from '../context/PortalBrandingContext'
 import { usePortalItem, formatDate } from '../hooks/usePortalData'
 
 export default function InvoiceDetailPage() {
   const { id } = useParams()
+  const branding = usePortalBranding()
   const { item: invoice, loading, error } = usePortalItem(id ? `/api/portal/invoices/${id}` : null)
 
   const downloadPdf = async () => {
@@ -118,7 +120,7 @@ export default function InvoiceDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-xl" style={{ display: 'grid' }}>
               <div>
                 <h3 className="font-label-md text-label-md text-secondary uppercase mb-sm">From</h3>
-                <div className="font-body-lg text-body-lg text-on-surface font-bold mb-xs">Hyegro Corp</div>
+                <div className="font-body-lg text-body-lg text-on-surface font-bold mb-xs">{branding.portalName}</div>
                 <div className="font-body-md text-body-md text-secondary">
                   123 Tech Boulevard<br/>
                   Suite 400<br/>

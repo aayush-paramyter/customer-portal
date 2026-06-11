@@ -5,6 +5,13 @@ from sqlalchemy.sql import func
 from .database import Base
 
 
+class Account(Base):
+    __tablename__ = "accounts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+
+
 class Contact(Base):
     __tablename__ = "contacts"
 
@@ -20,7 +27,7 @@ class Contact(Base):
     mailing_state = Column(String)
     mailing_country = Column(String)
     mailing_postal_code = Column(String)
-    portal_enabled = Column(Boolean, default=False)
+    portal_enabled = Column(Boolean, default=True)
 
 
 class PortalUser(Base):
@@ -35,7 +42,8 @@ class PortalUser(Base):
     last_login = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
-    created_by = Column(Integer, ForeignKey("users.id"))
+    # CRM users table is not mapped in this app; keep as plain int (DB FK may still exist).
+    created_by = Column(Integer, nullable=True)
 
 
 class PortalSession(Base):

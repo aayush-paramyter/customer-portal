@@ -7,7 +7,12 @@ from sqlalchemy.orm import Session
 
 from . import models
 from .database import get_session, validate_schema_name
-from .host_registry import is_dev_host, normalize_hostname, resolve_tenant_schema_for_host
+from .host_registry import (
+    is_bare_dev_host,
+    is_dev_host,
+    resolve_request_hostname,
+    resolve_tenant_schema_for_host,
+)
 from .security import decode_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/portal/auth/login")
@@ -17,7 +22,7 @@ def get_tenant_schema(
     request: Request,
     x_tenant_schema: str | None = Header(None, alias="X-Tenant-Schema"),
 ) -> str:
-    host = normalize_hostname(request.headers.get("host", ""))
+    host = resolve_request_hostname(request)
     resolved = resolve_tenant_schema_for_host(host)
 
     if resolved:
@@ -77,7 +82,7 @@ def get_current_portal_context(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Portal user inactive")
 
     contact = db.query(models.Contact).filter(models.Contact.id == portal_user.contact_id).first()
-    if not contact or not contact.portal_enabled:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Portal access disabled")
+    if not contact or not contact.email:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Portal access unavailable")
 
     return PortalAuthContext(schema=schema, portal_user=portal_user, contact=contact)

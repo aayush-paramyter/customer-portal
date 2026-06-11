@@ -238,7 +238,7 @@ export default function CaseDetailPage() {
                 <dt className="font-label-md text-label-md text-outline uppercase tracking-wider">Account</dt>
                 <dd className="font-body-md text-body-md text-on-surface flex items-center gap-xs">
                   <span className="material-symbols-outlined text-[16px] text-secondary">domain</span>
-                  Enterprise Client
+                  {found?.account_name || '—'}
                 </dd>
               </div>
               <div className="flex flex-col gap-xs">
@@ -252,35 +252,20 @@ export default function CaseDetailPage() {
                 <dt className="font-label-md text-label-md text-outline uppercase tracking-wider">Case Source</dt>
                 <dd className="font-body-md text-body-md text-on-surface flex items-center gap-xs">
                   <span className="material-symbols-outlined text-[16px] text-secondary">language</span>
-                  Web Portal
+                  {found?.case_source || 'Portal'}
                 </dd>
               </div>
             </dl>
           </aside>
 
-          {/* Attachments Card (Static representation matching high-fidelity layout details) */}
           <aside className="bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-outline-variant">
             <h3 className="font-headline-sm text-headline-sm text-on-surface mb-md border-b border-outline-variant pb-sm flex items-center gap-xs" style={{ display: 'flex', alignItems: 'center' }}>
               <span className="material-symbols-outlined text-secondary text-[20px]">attachment</span>
               Attachments
             </h3>
-            <ul className="flex flex-col gap-sm" style={{ display: 'flex', flexDirection: 'column', listStyle: 'none' }}>
-              <li>
-                <a className="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-container transition-colors group border border-transparent hover:border-outline-variant" href="#delivery-note" style={{ display: 'flex' }}>
-                  <div 
-                    className="w-8 h-8 rounded bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
-                  </div>
-                  <div className="flex flex-col flex-grow overflow-hidden" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span className="font-body-md text-body-md text-on-surface truncate group-hover:text-primary transition-colors">delivery_note.pdf</span>
-                    <span className="font-label-md text-label-md text-outline">1.2 MB</span>
-                  </div>
-                  <span className="material-symbols-outlined text-outline group-hover:text-primary transition-opacity text-[18px]">download</span>
-                </a>
-              </li>
-            </ul>
+            <p className="font-body-md text-body-md text-on-surface-variant m-0">
+              No attachments on this case.
+            </p>
           </aside>
         </div>
       </div>

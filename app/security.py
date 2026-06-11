@@ -31,15 +31,34 @@ def verify_password(password: str, hashed_password: str | None) -> bool:
         return False
 
 
+def _expiry_timestamp(*, minutes: int = 0, days: int = 0) -> int:
+    delta = datetime.timedelta(minutes=minutes, days=days)
+    return int((datetime.datetime.now(datetime.UTC) + delta).timestamp())
+
+
 def create_access_token(subject: str, schema: str, portal_user_id: int) -> str:
-    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=ACCESS_EXPIRE_MINUTES)
-    payload = {"sub": subject, "schema": schema, "portal_user_id": portal_user_id, "type": "access", "exp": exp}
+    payload = {
+        "sub": subject,
+        "schema": schema,
+        "portal_user_id": portal_user_id,
+        "type": "access",
+        "iat": int(datetime.datetime.now(datetime.UTC).timestamp()),
+        "exp": _expiry_timestamp(minutes=ACCESS_EXPIRE_MINUTES),
+        "jti": secrets.token_urlsafe(16),
+    }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def create_refresh_token(subject: str, schema: str, portal_user_id: int) -> str:
-    exp = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=REFRESH_EXPIRE_DAYS)
-    payload = {"sub": subject, "schema": schema, "portal_user_id": portal_user_id, "type": "refresh", "exp": exp}
+    payload = {
+        "sub": subject,
+        "schema": schema,
+        "portal_user_id": portal_user_id,
+        "type": "refresh",
+        "iat": int(datetime.datetime.now(datetime.UTC).timestamp()),
+        "exp": _expiry_timestamp(days=REFRESH_EXPIRE_DAYS),
+        "jti": secrets.token_urlsafe(16),
+    }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 

@@ -1,19 +1,30 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from .. import schemas
+from .. import models, schemas
 from ..dependencies import PortalAuthContext, get_current_portal_context, get_db
 from ..security import hash_password, verify_password
 
 router = APIRouter(prefix="/api/portal/profile", tags=["portal-profile"])
 
 
+def _account_name(db: Session, account_id: int | None) -> str | None:
+    if not account_id:
+        return None
+    account = db.query(models.Account).filter(models.Account.id == account_id).first()
+    return account.name if account else None
+
+
 @router.get("/", response_model=schemas.PortalProfile)
-def get_profile(ctx: PortalAuthContext = Depends(get_current_portal_context)):
+def get_profile(
+    db: Session = Depends(get_db),
+    ctx: PortalAuthContext = Depends(get_current_portal_context),
+):
     contact = ctx.contact
     return schemas.PortalProfile(
         contact_id=contact.id,
         email=contact.email,
+        account_name=_account_name(db, contact.account_id),
         first_name=contact.first_name,
         last_name=contact.last_name,
         phone=contact.phone,
@@ -37,7 +48,7 @@ def update_profile(
         setattr(ctx.contact, key, value)
     db.commit()
     db.refresh(ctx.contact)
-    return get_profile(ctx)
+    return get_profile(db=db, ctx=ctx)
 
 
 @router.post("/password")

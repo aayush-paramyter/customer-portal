@@ -34,10 +34,45 @@ def is_dev_host(host: str) -> bool:
     return host in ("localhost", "127.0.0.1") or host.endswith(".localhost")
 
 
+def is_bare_dev_host(host: str) -> bool:
+    normalized = normalize_hostname(host)
+    return normalized in ("localhost", "127.0.0.1")
+
+
+def resolve_request_hostname(request) -> str:
+    """Resolve the customer-facing portal hostname from proxy or browser headers."""
+    for key in ("x-portal-host", "x-forwarded-host", "host"):
+        raw = request.headers.get(key)
+        if not raw:
+            continue
+        host = raw.split(",")[0].strip()
+        normalized = normalize_hostname(host)
+        if normalized:
+            return normalized
+    return ""
+
+
+def _dev_localhost_tenant_schema(host: str) -> Optional[str]:
+    """Map slug.localhost to tenant_slug for local development without DNS."""
+    normalized = normalize_hostname(host)
+    if not normalized.endswith(".localhost") or is_bare_dev_host(normalized):
+        return None
+    slug = normalized[: -len(".localhost")]
+    if not slug or not re.match(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$", slug):
+        return None
+    try:
+        return validate_schema_name(f"tenant_{slug.replace('-', '_')}")
+    except ValueError:
+        return None
+
+
 def resolve_tenant_schema_for_host(host: str) -> Optional[str]:
     normalized = normalize_hostname(host)
     if not normalized:
         return None
+    dev_schema = _dev_localhost_tenant_schema(normalized)
+    if dev_schema:
+        return dev_schema
     db = get_session("public")
     try:
         row = db.execute(

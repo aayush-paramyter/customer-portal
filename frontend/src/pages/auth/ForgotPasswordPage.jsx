@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import PortalBrandMark from '../../components/PortalBrandMark'
 import { requestPasswordReset } from '../../api/portalApi'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
-  const [tenantSchema, setTenantSchema] = useState(localStorage.getItem('tenantSchema') || 'tenant_demo')
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     setError('')
     setLoading(true)
     try {
-      await requestPasswordReset({ email, tenantSchema })
+      await requestPasswordReset({ email })
       setSubmitted(true)
     } catch (err) {
       setError(err.message || 'Request failed')
@@ -55,12 +55,8 @@ export default function ForgotPasswordPage() {
 
       <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-level-1 border border-outline-variant p-lg relative z-10">
         {/* Brand Header */}
-        <div className="text-center mb-xl">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-on-primary mb-sm">
-            <span className="material-symbols-outlined text-[28px]">lock_reset</span>
-          </div>
-          <h1 className="font-display-lg text-display-lg text-primary mb-xs">Hyegro</h1>
-          <p className="font-headline-sm text-headline-sm text-secondary">Reset Password</p>
+        <div className="mb-xl">
+          <PortalBrandMark subtitle="Reset password" />
         </div>
 
         {!submitted ? (
@@ -91,29 +87,6 @@ export default function ForgotPasswordPage() {
                   className="block w-full rounded bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface transition-colors"
                   style={{ paddingLeft: '40px', height: '40px' }}
                   onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Tenant Schema */}
-            <div className="flex flex-col gap-xs">
-              <label className="font-label-md text-label-md text-on-surface-variant" htmlFor="forgot-tenant">Tenant Schema</label>
-              <div className="relative">
-                <div 
-                  className="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none text-outline"
-                  style={{ position: 'absolute', top: '0', bottom: '0', left: '12px', display: 'flex', alignItems: 'center' }}
-                >
-                  <span className="material-symbols-outlined text-[20px]">layers</span>
-                </div>
-                <input 
-                  id="forgot-tenant" 
-                  name="forgot-tenant" 
-                  placeholder="tenant_demo" 
-                  type="text" 
-                  value={tenantSchema}
-                  className="block w-full rounded bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface transition-colors"
-                  style={{ paddingLeft: '40px', height: '40px' }}
-                  onChange={(e) => setTenantSchema(e.target.value)}
                 />
               </div>
             </div>

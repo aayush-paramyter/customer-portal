@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 
+import { clearPortalSession } from '../api/portalApi'
+import { usePortalProfile } from '../hooks/usePortalProfile'
+import PortalBrandMark from './PortalBrandMark'
+import PortalFooter from './PortalFooter'
+import PortalUserSummary from './PortalUserSummary'
+
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
   { to: '/cases', label: 'Cases', icon: 'support_agent' },
@@ -13,10 +19,10 @@ const navItems = [
 export default function PortalLayout({ title, subtitle, breadcrumb, actions, children }) {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { profile, loading: profileLoading } = usePortalProfile()
 
   const onLogout = () => {
-    localStorage.removeItem('portalAccessToken')
-    localStorage.removeItem('portalRefreshToken')
+    clearPortalSession()
     navigate('/login')
   }
 
@@ -59,9 +65,8 @@ export default function PortalLayout({ title, subtitle, breadcrumb, actions, chi
     <div className="min-h-screen flex flex-col md:flex-row bg-background">
       {/* Mobile Top Navbar */}
       <header className="lg:hidden bg-surface-container-lowest text-primary border-b border-outline-variant shadow-sm flex justify-between items-center w-full px-margin-mobile py-sm h-16 sticky top-0 z-50">
-        <div className="flex items-center gap-sm">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">H</div>
-          <span className="font-headline-md text-headline-md font-bold text-primary">Hyegro</span>
+        <div className="flex items-center gap-sm min-w-0">
+          <PortalBrandMark compact showTagline={false} centered={false} />
         </div>
         <button 
           className="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low rounded-lg p-2 transition-all bg-surface-container-lowest border-none cursor-pointer"
@@ -81,9 +86,8 @@ export default function PortalLayout({ title, subtitle, breadcrumb, actions, chi
             className="w-64 max-w-[80vw] h-full bg-surface border-r border-outline-variant p-md flex flex-col gap-sm"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mb-lg flex flex-col gap-xs pt-4">
-              <h1 className="font-headline-sm text-headline-sm font-bold text-primary">Hyegro</h1>
-              <span className="font-label-md text-label-md text-secondary">Customer Portal</span>
+            <div className="mb-lg pt-4">
+              <PortalBrandMark compact centered={false} />
             </div>
             
             <button 
@@ -99,12 +103,8 @@ export default function PortalLayout({ title, subtitle, breadcrumb, actions, chi
 
             {renderNavLinks()}
 
-            <div className="mt-auto pt-md border-t border-outline-variant flex items-center gap-sm">
-              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-label-md shrink-0">SJ</div>
-              <div className="flex flex-col overflow-hidden">
-                <span className="font-label-md text-label-md font-bold truncate">Sarah Johnson</span>
-                <span className="font-mono-sm text-mono-sm text-secondary truncate text-xs">Enterprise Solutions</span>
-              </div>
+            <div className="mt-auto pt-md border-t border-outline-variant">
+              <PortalUserSummary loading={profileLoading} profile={profile} />
             </div>
           </div>
         </div>
@@ -112,12 +112,8 @@ export default function PortalLayout({ title, subtitle, breadcrumb, actions, chi
 
       {/* Desktop Sidebar */}
       <nav className="bg-surface text-primary hidden lg:flex flex-col gap-sm p-md h-screen sticky top-0 shrink-0 z-40 w-64 border-r border-outline-variant">
-        <div className="mb-xl flex flex-col gap-xs pt-4">
-          <div className="flex items-center gap-sm">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">H</div>
-            <h1 className="font-headline-sm text-headline-sm font-bold text-primary">Hyegro</h1>
-          </div>
-          <span className="font-label-md text-label-md text-secondary px-sm">Customer Portal</span>
+        <div className="mb-xl pt-4">
+          <PortalBrandMark compact centered={false} />
         </div>
 
         <button 
@@ -130,12 +126,8 @@ export default function PortalLayout({ title, subtitle, breadcrumb, actions, chi
 
         {renderNavLinks()}
 
-        <div className="mt-auto pt-md border-t border-outline-variant flex items-center gap-sm">
-          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-label-md shrink-0">SJ</div>
-          <div className="flex flex-col overflow-hidden">
-            <span className="font-label-md text-label-md font-bold truncate">Sarah Johnson</span>
-            <span className="font-mono-sm text-mono-sm text-secondary truncate text-xs">Enterprise Solutions</span>
-          </div>
+        <div className="mt-auto pt-md border-t border-outline-variant">
+          <PortalUserSummary loading={profileLoading} profile={profile} />
         </div>
       </nav>
 
@@ -147,9 +139,7 @@ export default function PortalLayout({ title, subtitle, breadcrumb, actions, chi
             <button className="text-secondary hover:text-primary p-2 rounded-lg hover:bg-surface-container-low transition-all bg-transparent border-none cursor-pointer">
               <span className="material-symbols-outlined">notifications</span>
             </button>
-            <div className="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant">
-              <img alt="User profile" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMgmTO649uJjEiXM87KIgh29gLcQit1kcu-jkpewwxXh-CTabuv3rAVSROAQGAFrLjikx9qdfKULk1HP8pzc76RjCMPWTz50OoLCGiIUVLga_xr_wR7R8Tk8WmVnhzpyy93DTHPaR9S5exFckWBNpOXSa0sbTDDivrujUNLoNLw9j5eJvCQIDtvgYjv7OCa80w2hpHctbzcjriRyoPEeaVUBHupS766RMXyHBIioP3QXvC2rlZDJpW0GpNpEm94UywUK9Fn4L5fsr3"/>
-            </div>
+            <PortalUserSummary loading={profileLoading} profile={profile} />
           </div>
         </div>
 
@@ -185,18 +175,7 @@ export default function PortalLayout({ title, subtitle, breadcrumb, actions, chi
           {children}
         </div>
 
-        {/* Shared B2B Footer */}
-        <footer className="bg-surface-container-lowest border-t border-outline-variant w-full py-lg px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-md mt-auto z-10">
-          <div className="font-label-md text-label-md font-bold text-on-surface">
-            © 2024 Hyegro B2B Portal. All rights reserved.
-          </div>
-          <div className="flex flex-wrap justify-center gap-md font-label-md text-label-md text-secondary">
-            <a className="hover:text-primary hover:underline transition-opacity duration-200" href="#support">Support</a>
-            <a className="hover:text-primary hover:underline transition-opacity duration-200" href="#privacy">Privacy Policy</a>
-            <a className="hover:text-primary hover:underline transition-opacity duration-200" href="#terms">Terms of Service</a>
-            <a className="hover:text-primary hover:underline transition-opacity duration-200" href="#api">API Docs</a>
-          </div>
-        </footer>
+        <PortalFooter />
       </main>
     </div>
   )

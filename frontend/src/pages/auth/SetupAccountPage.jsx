@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PortalBrandMark from '../../components/PortalBrandMark'
 
 export default function SetupAccountPage() {
   const navigate = useNavigate()
@@ -45,12 +46,8 @@ export default function SetupAccountPage() {
 
       <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-level-1 border border-outline-variant p-lg relative z-10">
         {/* Brand Header */}
-        <div className="text-center mb-xl">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-on-primary mb-sm">
-            <span className="material-symbols-outlined text-[28px]">lock_person</span>
-          </div>
-          <h1 className="font-display-lg text-display-lg text-primary mb-xs">Hyegro</h1>
-          <p className="font-headline-sm text-headline-sm text-secondary">Set up your account</p>
+        <div className="mb-xl">
+          <PortalBrandMark subtitle="Set up your account" />
         </div>
 
         <form onSubmit={onSubmit} className="flex flex-col gap-lg">

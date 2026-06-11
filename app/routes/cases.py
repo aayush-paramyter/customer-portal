@@ -41,20 +41,26 @@ def create_case(
     db: Session = Depends(get_db),
     ctx: PortalAuthContext = Depends(get_current_portal_context),
 ):
+    account_name = None
+    if ctx.contact.account_id:
+        account = db.query(models.Account).filter(models.Account.id == ctx.contact.account_id).first()
+        account_name = account.name if account else None
+
     max_case_id = db.query(func.max(models.Case.id)).scalar() or 0
+    contact_name = f"{ctx.contact.first_name or ''} {ctx.contact.last_name or ''}".strip() or ctx.contact.email
     case = models.Case(
         case_number=f"CASE-{str(max_case_id + 1).zfill(5)}",
         account_id=ctx.contact.account_id,
         contact_id=ctx.contact.id,
-        account_name=None,
-        contact_name=f"{ctx.contact.first_name or ''} {ctx.contact.last_name or ''}".strip() or ctx.contact.email,
+        account_name=account_name,
+        contact_name=contact_name,
         subject=body.subject,
         description=body.description,
         status="Open",
         case_source="Portal",
-        created_by_name="Portal User",
-        created_by=0,
-        updated_by=0,
+        created_by_name=contact_name,
+        created_by=None,
+        updated_by=None,
         order_id=body.order_id,
         order_number=body.order_number,
     )

@@ -45,6 +45,7 @@ class ChangePasswordRequest(BaseModel):
 class PortalProfile(BaseModel):
     contact_id: int
     email: Optional[str] = None
+    account_name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
@@ -85,6 +86,8 @@ class PortalCaseOut(BaseModel):
     subject: Optional[str] = None
     status: Optional[str] = None
     description: Optional[str] = None
+    account_name: Optional[str] = None
+    case_source: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

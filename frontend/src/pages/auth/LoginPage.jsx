@@ -1,16 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import PortalBrandMark from '../../components/PortalBrandMark'
 import { loginWithPassword } from '../../api/portalApi'
-import { isLocalDevHost } from '../../api/portalHost'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const showTenantField = isLocalDevHost()
   const [form, setForm] = useState({
     email: '',
     password: '',
     remember: false,
-    tenantSchema: localStorage.getItem('tenantSchema') || 'tenant_demo',
   })
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
@@ -24,7 +22,6 @@ export default function LoginPage() {
       await loginWithPassword({
         email: form.email,
         password: form.password,
-        tenantSchema: form.tenantSchema || 'tenant_demo',
       })
       navigate('/dashboard')
     } catch (err) {
@@ -67,12 +64,8 @@ export default function LoginPage() {
       {/* Main Login Card Container */}
       <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-level-1 border border-outline-variant p-lg relative z-10">
         {/* Header Section */}
-        <div className="text-center mb-xl">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-on-primary mb-sm">
-            <span className="material-symbols-outlined text-[28px]">domain</span>
-          </div>
-          <h1 className="font-display-lg text-display-lg text-primary mb-xs">Hyegro</h1>
-          <h2 className="font-headline-sm text-headline-sm text-secondary">Customer Portal Login</h2>
+        <div className="mb-xl">
+          <PortalBrandMark subtitle="Sign in" />
         </div>
 
         {/* Login Form */}
@@ -147,32 +140,6 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-
-          {showTenantField ? (
-            <div className="flex flex-col gap-xs">
-              <label className="font-label-md text-label-md text-on-surface-variant" htmlFor="tenantSchema">
-                Tenant Schema (development only)
-              </label>
-              <div className="relative">
-                <div
-                  className="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none text-outline"
-                  style={{ position: 'absolute', top: '0', bottom: '0', left: '12px', display: 'flex', alignItems: 'center' }}
-                >
-                  <span className="material-symbols-outlined text-[20px]">layers</span>
-                </div>
-                <input
-                  id="tenantSchema"
-                  name="tenantSchema"
-                  placeholder="tenant_demo"
-                  type="text"
-                  value={form.tenantSchema}
-                  className="block w-full rounded bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface transition-colors"
-                  style={{ paddingLeft: '40px', height: '40px' }}
-                  onChange={(e) => setForm((s) => ({ ...s, tenantSchema: e.target.value }))}
-                />
-              </div>
-            </div>
-          ) : null}
 
           {/* Error Message */}
           {error ? (

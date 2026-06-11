@@ -14,3 +14,21 @@ class TestPortalSecurity:
         assert payload["portal_user_id"] == 42
         assert payload["schema"] == "tenant_demo"
         assert payload["type"] == "access"
+        assert payload["jti"]
+
+    def test_tokens_are_unique_per_issue(self):
+        t1 = create_access_token("user@example.com", "tenant_demo", portal_user_id=42)
+        t2 = create_access_token("user@example.com", "tenant_demo", portal_user_id=42)
+        assert t1 != t2
+
+    def test_access_token_lifetime_matches_config(self):
+        import datetime
+        import jwt
+        from app.security import ACCESS_EXPIRE_MINUTES, SECRET_KEY
+
+        token = create_access_token("user@example.com", "tenant_demo", portal_user_id=42)
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        exp = datetime.datetime.fromtimestamp(payload["exp"], tz=datetime.UTC)
+        now = datetime.datetime.now(datetime.UTC)
+        minutes = (exp - now).total_seconds() / 60
+        assert ACCESS_EXPIRE_MINUTES - 1 <= minutes <= ACCESS_EXPIRE_MINUTES

@@ -4,7 +4,7 @@ from contextvars import ContextVar
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, event, text, pool
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 load_dotenv()
 
@@ -47,16 +47,37 @@ def get_engine(schema: str):
         poolclass=pool.QueuePool,
     )
 
-    @event.listens_for(engine, "connect")
-    def _set_path(dbapi_connection, connection_record):  # noqa: ANN001,ARG001
+    quoted_schema = _quote_schema(schema)
+
+    def _apply_search_path(dbapi_connection) -> None:
         with dbapi_connection.cursor() as cursor:
-            cursor.execute(f"SET search_path TO {_quote_schema(schema)}")
+            cursor.execute(f"SET search_path TO {quoted_schema}")
+
+    @event.listens_for(engine, "connect")
+    def _set_path_on_connect(dbapi_connection, connection_record):  # noqa: ANN001,ARG001
+        _apply_search_path(dbapi_connection)
+
+    @event.listens_for(engine, "checkout")
+    def _set_path_on_checkout(dbapi_connection, connection_record, connection_proxy):  # noqa: ANN001,ARG001
+        _apply_search_path(dbapi_connection)
 
     _engines[schema] = engine
     return engine
 
 
+@event.listens_for(Session, "after_transaction_end")
+def _restore_search_path_after_transaction(session, transaction) -> None:
+    """Neon pooler resets search_path when a transaction ends; re-apply for the tenant."""
+    if transaction.nested or transaction.parent is not None:
+        return
+    schema = session.info.get("tenant_schema")
+    if schema:
+        session.execute(text(f"SET search_path TO {_quote_schema(schema)}"))
+
+
 def get_session(schema: str):
+    schema = validate_schema_name(schema)
     session = sessionmaker(bind=get_engine(schema), autocommit=False, autoflush=False)()
+    session.info["tenant_schema"] = schema
     session.execute(text(f"SET search_path TO {_quote_schema(schema)}"))
     return session

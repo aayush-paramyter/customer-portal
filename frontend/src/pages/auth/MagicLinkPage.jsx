@@ -1,28 +1,41 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import PortalBrandMark from '../../components/PortalBrandMark'
 import { requestMagicLink, verifyMagicLink } from '../../api/portalApi'
 
 export default function MagicLinkPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
-  const [tenantSchema, setTenantSchema] = useState(localStorage.getItem('tenantSchema') || 'tenant_demo')
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const token = searchParams.get('token')
-    const tenant = searchParams.get('tenant') || tenantSchema
     if (!token) return undefined
+
+    const verifyKey = `portal:magic-link-verify:${token}`
+    if (sessionStorage.getItem(verifyKey) === 'done') {
+      navigate('/dashboard', { replace: true })
+      return undefined
+    }
+    if (sessionStorage.getItem(verifyKey) === 'pending') {
+      return undefined
+    }
+    sessionStorage.setItem(verifyKey, 'pending')
 
     let cancelled = false
     setLoading(true)
-    verifyMagicLink({ token, tenantSchema: tenant })
+    verifyMagicLink({ token })
       .then(() => {
-        if (!cancelled) navigate('/dashboard')
+        if (!cancelled) {
+          sessionStorage.setItem(verifyKey, 'done')
+          navigate('/dashboard', { replace: true })
+        }
       })
       .catch((err) => {
+        sessionStorage.removeItem(verifyKey)
         if (!cancelled) setError(err.message || 'Invalid magic link')
       })
       .finally(() => {
@@ -31,14 +44,14 @@ export default function MagicLinkPage() {
     return () => {
       cancelled = true
     }
-  }, [navigate, searchParams, tenantSchema])
+  }, [navigate, searchParams])
 
   const onSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await requestMagicLink({ email, tenantSchema })
+      await requestMagicLink({ email })
       setSent(true)
     } catch (err) {
       setError(err.message || 'Request failed')
@@ -98,12 +111,8 @@ export default function MagicLinkPage() {
 
       <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-level-1 border border-outline-variant p-lg relative z-10">
         {/* Brand Header */}
-        <div className="text-center mb-xl">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-on-primary mb-sm">
-            <span className="material-symbols-outlined text-[28px]">auto_awesome</span>
-          </div>
-          <h1 className="font-display-lg text-display-lg text-primary mb-xs">Hyegro</h1>
-          <p className="font-headline-sm text-headline-sm text-secondary">Sign in with Magic Link</p>
+        <div className="mb-xl">
+          <PortalBrandMark subtitle="Sign in with magic link" />
         </div>
 
         {!sent ? (
@@ -128,29 +137,6 @@ export default function MagicLinkPage() {
                   className="block w-full rounded bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface transition-colors"
                   style={{ paddingLeft: '40px', height: '40px' }}
                   onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Tenant Schema */}
-            <div className="flex flex-col gap-xs">
-              <label className="font-label-md text-label-md text-on-surface-variant" htmlFor="magic-tenant">Tenant Schema</label>
-              <div className="relative">
-                <div 
-                  className="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none text-outline"
-                  style={{ position: 'absolute', top: '0', bottom: '0', left: '12px', display: 'flex', alignItems: 'center' }}
-                >
-                  <span className="material-symbols-outlined text-[20px]">layers</span>
-                </div>
-                <input 
-                  id="magic-tenant" 
-                  name="magic-tenant" 
-                  placeholder="tenant_demo" 
-                  type="text" 
-                  value={tenantSchema}
-                  className="block w-full rounded bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface transition-colors"
-                  style={{ paddingLeft: '40px', height: '40px' }}
-                  onChange={(e) => setTenantSchema(e.target.value)}
                 />
               </div>
             </div>

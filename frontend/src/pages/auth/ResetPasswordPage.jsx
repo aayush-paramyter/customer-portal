@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import PortalBrandMark from '../../components/PortalBrandMark'
 import { confirmPasswordReset } from '../../api/portalApi'
 
 export default function ResetPasswordPage() {
@@ -7,7 +8,6 @@ export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [tenantSchema, setTenantSchema] = useState(localStorage.getItem('tenantSchema') || 'tenant_demo')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -23,7 +23,7 @@ export default function ResetPasswordPage() {
     setError('')
     setLoading(true)
     try {
-      await confirmPasswordReset({ token, newPassword: password, tenantSchema })
+      await confirmPasswordReset({ token, newPassword: password })
       // On success, redirect to setup success page
       navigate('/auth/account-setup-success')
     } catch (err) {
@@ -65,12 +65,8 @@ export default function ResetPasswordPage() {
 
       <div className="w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-level-1 border border-outline-variant p-lg relative z-10">
         {/* Brand Header */}
-        <div className="text-center mb-xl">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-on-primary mb-sm">
-            <span className="material-symbols-outlined text-[28px]">lock</span>
-          </div>
-          <h1 className="font-display-lg text-display-lg text-primary mb-xs">Hyegro</h1>
-          <p className="font-headline-sm text-headline-sm text-secondary">Create New Password</p>
+        <div className="mb-xl">
+          <PortalBrandMark subtitle="Create new password" />
         </div>
 
         <form onSubmit={onSubmit} className="flex flex-col gap-lg">
@@ -138,29 +134,6 @@ export default function ResetPasswordPage() {
                 className="block w-full rounded bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface transition-colors"
                 style={{ paddingLeft: '40px', paddingRight: '40px', height: '40px' }}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Tenant Schema */}
-          <div className="flex flex-col gap-xs">
-            <label className="font-label-md text-label-md text-on-surface-variant" htmlFor="reset-tenant">Tenant Schema</label>
-            <div className="relative">
-              <div 
-                className="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none text-outline"
-                style={{ position: 'absolute', top: '0', bottom: '0', left: '12px', display: 'flex', alignItems: 'center' }}
-              >
-                <span className="material-symbols-outlined text-[20px]">layers</span>
-              </div>
-              <input 
-                id="reset-tenant" 
-                name="reset-tenant" 
-                placeholder="tenant_demo" 
-                type="text" 
-                value={tenantSchema}
-                className="block w-full rounded bg-surface-container-lowest border border-outline-variant font-body-md text-body-md text-on-surface transition-colors"
-                style={{ paddingLeft: '40px', height: '40px' }}
-                onChange={(e) => setTenantSchema(e.target.value)}
               />
             </div>
           </div>

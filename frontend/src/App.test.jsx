@@ -15,6 +15,7 @@ function renderWithRoute(route) {
 describe('Customer Portal routing', () => {
   beforeEach(() => {
     localStorage.clear()
+    localStorage.setItem('tenantSchema', 'tenant_demo')
     vi.stubGlobal('fetch', vi.fn())
   })
 
@@ -24,15 +25,25 @@ describe('Customer Portal routing', () => {
 
   it('renders login page by default', () => {
     renderWithRoute('/login')
-    expect(screen.getByRole('heading', { name: /customer portal login/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
   })
 
   it('redirects protected routes to login when unauthenticated', () => {
     renderWithRoute('/dashboard')
-    expect(screen.getByRole('heading', { name: /customer portal login/i })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument()
   })
 
   it('allows authenticated navigation to dashboard', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        first_name: 'Demo',
+        last_name: 'User',
+        email: 'demo@example.com',
+        account_name: 'Demo Co',
+      }),
+    })
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -63,6 +74,16 @@ describe('Customer Portal routing', () => {
         status: 200,
         json: async () => ({ access_token: 'at', refresh_token: 'rt' }),
       })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          first_name: 'Demo',
+          last_name: 'User',
+          email: 'demo@example.com',
+          account_name: 'Demo Co',
+        }),
+      })
       .mockResolvedValue({
         ok: true,
         status: 200,
@@ -78,6 +99,11 @@ describe('Customer Portal routing', () => {
   })
 
   it('renders cases list screen', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ first_name: 'Demo', last_name: 'User', email: 'demo@example.com' }),
+    })
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
@@ -98,6 +124,11 @@ describe('Customer Portal routing', () => {
   })
 
   it('renders invoices page', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ first_name: 'Demo', last_name: 'User', email: 'demo@example.com' }),
+    })
     fetch.mockResolvedValueOnce({
       ok: true,
       status: 200,

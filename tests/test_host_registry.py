@@ -15,3 +15,6 @@ class TestHostRegistry:
         db.execute.return_value.first.return_value = ("tenant_acme",)
         assert resolve_tenant_schema_for_host("acme.portals.hyegro.com") == "tenant_acme"
         db.close.assert_called_once()
+
+    def test_resolve_dev_localhost_subdomain(self):
+        assert resolve_tenant_schema_for_host("master.localhost") == "tenant_master"
