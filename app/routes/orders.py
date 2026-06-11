@@ -14,7 +14,7 @@ def _orders_query_for_scope(db: Session, ctx: PortalAuthContext):
     return query.filter(models.Order.contact_id == ctx.contact.id)
 
 
-@router.get("/", response_model=list[schemas.PortalOrderOut])
+@router.get("", response_model=list[schemas.PortalOrderOut])
 def list_orders(db: Session = Depends(get_db), ctx: PortalAuthContext = Depends(get_current_portal_context)):
     return _orders_query_for_scope(db, ctx).order_by(models.Order.updated_at.desc()).all()
 

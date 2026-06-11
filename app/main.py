@@ -10,7 +10,7 @@ from .routes.orders import router as orders_router
 from .routes.profile import router as profile_router
 from .routes.public import router as public_router
 
-app = FastAPI(title="Hyegro Customer Portal API", version="0.2.0")
+app = FastAPI(title="Hyegro Customer Portal API", version="0.2.0", redirect_slashes=False)
 
 _cors_origins = [
     o.strip()

@@ -15,7 +15,7 @@ def _account_name(db: Session, account_id: int | None) -> str | None:
     return account.name if account else None
 
 
-@router.get("/", response_model=schemas.PortalProfile)
+@router.get("", response_model=schemas.PortalProfile)
 def get_profile(
     db: Session = Depends(get_db),
     ctx: PortalAuthContext = Depends(get_current_portal_context),
@@ -37,7 +37,7 @@ def get_profile(
     )
 
 
-@router.patch("/", response_model=schemas.PortalProfile)
+@router.patch("", response_model=schemas.PortalProfile)
 def update_profile(
     body: schemas.PortalProfileUpdate,
     db: Session = Depends(get_db),

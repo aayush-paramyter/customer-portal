@@ -57,7 +57,7 @@ def get_host_context(request: Request):
                 status_code=404,
                 detail=(
                     "Open your customer portal using your company's portal URL "
-                    "(e.g. yourcompany.portals.hyegro.com). "
+                    "(e.g. yourcompany-portal.hyegro.com). "
                     "For local development, use http://<tenant>.localhost:5173"
                 ),
             )

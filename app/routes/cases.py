@@ -15,7 +15,7 @@ def _case_query_for_scope(db: Session, ctx: PortalAuthContext):
     return query.filter(models.Case.contact_id == ctx.contact.id)
 
 
-@router.get("/", response_model=list[schemas.PortalCaseOut])
+@router.get("", response_model=list[schemas.PortalCaseOut])
 def list_cases(
     status: str | None = Query(default=None),
     db: Session = Depends(get_db),
@@ -35,7 +35,7 @@ def get_case(case_id: int, db: Session = Depends(get_db), ctx: PortalAuthContext
     return case
 
 
-@router.post("/", response_model=schemas.PortalCaseOut)
+@router.post("", response_model=schemas.PortalCaseOut)
 def create_case(
     body: schemas.PortalCaseCreate,
     db: Session = Depends(get_db),

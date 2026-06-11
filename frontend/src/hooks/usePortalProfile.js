@@ -27,7 +27,7 @@ export function usePortalProfile() {
     setLoading(true)
     setError('')
     try {
-      const data = await portalFetch('/api/portal/profile/')
+      const data = await portalFetch('/api/portal/profile')
       setProfile(data)
       return data
     } catch (err) {

@@ -20,7 +20,7 @@ def _invoice_query_for_scope(db: Session, ctx: PortalAuthContext):
     return query.filter(models.Invoice.account_id == account_id)
 
 
-@router.get("/", response_model=list[schemas.PortalInvoiceOut])
+@router.get("", response_model=list[schemas.PortalInvoiceOut])
 def list_invoices(db: Session = Depends(get_db), ctx: PortalAuthContext = Depends(get_current_portal_context)):
     return _invoice_query_for_scope(db, ctx).order_by(models.Invoice.invoice_date.desc()).all()
 

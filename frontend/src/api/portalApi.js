@@ -13,11 +13,11 @@ export function clearPortalSession() {
 }
 
 export async function fetchPortalProfile() {
-  return portalFetch('/api/portal/profile/')
+  return portalFetch('/api/portal/profile')
 }
 
 export async function updatePortalProfile(body) {
-  return portalFetch('/api/portal/profile/', {
+  return portalFetch('/api/portal/profile', {
     method: 'PATCH',
     body: JSON.stringify(body),
   })
